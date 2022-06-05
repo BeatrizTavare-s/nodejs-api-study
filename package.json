@@ -9,7 +9,8 @@
     "start:dev": "ts-node-dev --transpile-only src/index.ts",
     "lint": "eslint ./src ./test --ext .ts",
     "lint:fix": "eslint ./src ./test --ext .ts --fix",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:functional": "jest --projects ./test --runInBand"
   },
   "keywords": [
     "nodejs",
@@ -19,11 +20,16 @@
   "author": "Beatriz Tavares",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^28.1.1",
     "@types/module-alias": "^2.0.1",
     "@types/node": "^17.0.39",
+    "@types/supertest": "^2.0.12",
     "@typescript-eslint/eslint-plugin": "^5.27.0",
     "@typescript-eslint/parser": "^5.27.0",
     "eslint": "^8.17.0",
+    "jest": "^28.1.0",
+    "supertest": "^6.2.3",
+    "ts-jest": "^28.0.4",
     "ts-node-dev": "^2.0.0",
     "typescript": "^4.7.3"
   },
