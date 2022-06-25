@@ -47,5 +47,5 @@ jobs:
         with:
           heroku_api_key: ${{secrets.HEROKU_API_KEY}}
           heroku_app_name: 'peaceful-plateau-04699'
-          heroku_email: 'waldemarnt@gmail.com'
+          heroku_email: 'beatriz98t@gmail.com'
           buildpack: 'https://github.com/zidizei/heroku-buildpack-tsc#v2.0'
