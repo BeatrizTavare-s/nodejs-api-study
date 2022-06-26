@@ -11,14 +11,12 @@ export abstract class BaseController {
   ): void {
     if (error instanceof Error.ValidationError) {
       const clientErros = this.handleClientErrors(error);
-      res
-        .status(clientErros.code)
-        .send(
-          ApiError.format({
-            code: clientErros.code,
-            message: clientErros.error,
-          })
-        );
+      res.status(clientErros.code).send(
+        ApiError.format({
+          code: clientErros.code,
+          message: clientErros.error,
+        })
+      );
     } else {
       logger.error(error);
       res
@@ -37,7 +35,7 @@ export abstract class BaseController {
     if (duplicateKindErrors.length) {
       return { code: 409, error: error.message };
     }
-    return { code: 422, error: error.message };
+    return { code: 400, error: error.message };
   }
 
   protected sendErrorResponse(res: Response, apiError: APIError): Response {

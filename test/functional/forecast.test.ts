@@ -1,13 +1,14 @@
 import { Beach, GeoPosition } from '@src/models/beach';
-import stormGlassWeather3HoursFixture from '@test/fixtures/stormglass_weather_3_hours.json';
-import apiForecastResponse1BeachFixture from '@test/fixtures/api_forecast_response_1_beach.json';
 import nock from 'nock';
+import stormGlassWeather3HoursFixture from '../fixtures/stormglass_weather_3_hours.json';
+import apiForecastResponse1BeachFixture from '../fixtures/api_forecast_response_1_beach.json';
 import { User } from '@src/models/user';
 import AuthService from '@src/services/auth';
+
 describe('Beach forecast functional tests', () => {
-  const defaultUser = {
+  const defaultUser: User = {
     name: 'John Doe',
-    email: 'john2@mail.com',
+    email: 'john3@mail.com',
     password: '1234',
   };
   let token: string;
@@ -39,6 +40,7 @@ describe('Beach forecast functional tests', () => {
         lng: '151.289824',
         params: /(.*)/,
         source: 'noaa',
+        end: /(.*)/,
       })
       .reply(200, stormGlassWeather3HoursFixture);
 
@@ -46,6 +48,7 @@ describe('Beach forecast functional tests', () => {
       .get('/forecast')
       .set({ 'x-access-token': token });
     expect(status).toBe(200);
+    // Make sure we use toEqual to check value not the object and array itself
     expect(body).toEqual(apiForecastResponse1BeachFixture);
   });
 

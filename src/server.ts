@@ -1,23 +1,42 @@
 import './util/module-alias';
 import { Server } from '@overnightjs/core';
+import { Application } from 'express';
 import bodyParser from 'body-parser';
+import * as http from 'http';
 import expressPino from 'express-pino-logger';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import * as OpenApiValidator from 'express-openapi-validator';
+import { OpenAPIV3 } from 'express-openapi-validator/dist/framework/types';
 import { ForecastController } from './controllers/forecast';
-import { Application } from 'express';
 import * as database from '@src/database';
 import { BeachesController } from './controllers/beaches';
 import { UsersController } from './controllers/users';
 import logger from './logger';
+import apiSchema from './api-schema.json';
+import { apiErrorValidator } from './middlewares/api-error-validator';
+
 export class SetupServer extends Server {
+  private server?: http.Server;
+  /*
+   * same as this.port = port, declaring as private here will
+   * add the port variable to the SetupServer instance
+   */
   constructor(private port = 3000) {
     super();
   }
 
+  /*
+   * We use a different method to init instead of using the constructor
+   * this way we allow the server to be used in tests and normal initialization
+   */
   public async init(): Promise<void> {
     this.setupExpress();
+    await this.docsSetup();
     this.setupControllers();
     await this.databaseSetup();
+    //must be the last
+    this.setupErrorHandlers();
   }
 
   private setupExpress(): void {
@@ -34,15 +53,34 @@ export class SetupServer extends Server {
     );
   }
 
+  private async docsSetup(): Promise<void> {
+    this.app.use('/docs', swaggerUi.serve, swaggerUi.setup(apiSchema));
+    this.app.use(
+      OpenApiValidator.middleware({
+        apiSpec: apiSchema as OpenAPIV3.Document,
+        validateRequests: true, //will be implemented in step2
+        validateResponses: true, //will be implemented in step2
+      })
+    );
+  }
+
   private setupControllers(): void {
-    const forecasrController = new ForecastController();
+    const forecastController = new ForecastController();
     const beachesController = new BeachesController();
     const usersController = new UsersController();
     this.addControllers([
-      forecasrController,
+      forecastController,
       beachesController,
       usersController,
     ]);
+  }
+
+  private setupErrorHandlers(): void {
+    this.app.use(apiErrorValidator);
+  }
+
+  public getApp(): Application {
+    return this.app;
   }
 
   private async databaseSetup(): Promise<void> {
@@ -51,15 +89,21 @@ export class SetupServer extends Server {
 
   public async close(): Promise<void> {
     await database.close();
+    if (this.server) {
+      await new Promise((resolve, reject) => {
+        this.server?.close((err) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(true);
+        });
+      });
+    }
   }
 
   public start(): void {
-    this.app.listen(this.port, () => {
-      logger.info('Server listening of port:' + this.port);
+    this.server = this.app.listen(this.port, () => {
+      logger.info('Server listening on port: ' + this.port);
     });
-  }
-
-  public getApp(): Application {
-    return this.app;
   }
 }
